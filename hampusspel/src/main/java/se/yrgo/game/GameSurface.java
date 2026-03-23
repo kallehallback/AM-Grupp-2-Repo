@@ -37,12 +37,12 @@ public class GameSurface extends JPanel implements KeyListener {
     private static Logger logger = Logger.getLogger(GameSurface.class.getName());
 
     private static final double PIPE_PIXELS_PER_MS = 0.25;
-    private static final double SCORE_PER_SECOND = 0.5;
 
     // make some transient to get past boring serialization demands...
     private transient FrameUpdater updater;
     private boolean gameOver;
     private transient List<Pipe> pipes;
+    private transient List<Counter> counters;
     private Rectangle birb;
     private transient BufferedImage birbImageSprite;
     private int birbImageSpriteCount;
@@ -76,6 +76,7 @@ public class GameSurface extends JPanel implements KeyListener {
 
         this.gameOver = false;
         this.pipes = new ArrayList<>();
+        this.counters = new ArrayList<>();
         this.birb = new Rectangle(500, 432, 85, 60);
         this.score = 0;
 
@@ -144,7 +145,7 @@ public class GameSurface extends JPanel implements KeyListener {
     }
 
     private void drawScore(Graphics2D g, Dimension d, boolean gameOverBackground) {
-        final String scoreText = String.valueOf(score);
+        final String scoreText = String.valueOf(score/20);
         final Font scoreFont = new Font("Monospaced", Font.BOLD, 100);
 
         g.setFont(scoreFont);
@@ -193,13 +194,15 @@ public class GameSurface extends JPanel implements KeyListener {
         // contineusly spawn pipes every other second
         if (time - lastPipeSpawnTime >= PIPE_SPAWN_INTERVAL) {
             addPipe(time, d.height);
+            addCounter(time);
             lastPipeSpawnTime = time;
         }
 
         // add 1 point every other second, after a 2 second delay
-        score = (int) (((time - 2200) / 1000.0) * SCORE_PER_SECOND);
+        //score = (int) (((time - 2200) / 1000.0) * SCORE_PER_SECOND);
 
         final List<Pipe> toRemove = new ArrayList<>();
+        final List <Counter> toRemoveCounter = new ArrayList<>();
 
         for (Pipe pipe : pipes) {
             // movement is based on elapsed time to make it smoother and
@@ -216,14 +219,26 @@ public class GameSurface extends JPanel implements KeyListener {
                 gameOver = true;
             }
         }
+        for (Counter counter : counters) {
+            int timeElapsed = time - counter.timeCreated;
+            counter.bounds.x = (int) (d.width - (timeElapsed * PIPE_PIXELS_PER_MS)+150);
+            if (counter.bounds.x + counter.bounds.width < 0){
+                toRemoveCounter.add(counter);
+            }
+
+            if (counter.bounds.intersects(birb)) {
+                score = score + 1;
+            }
+        }
 
         // remove all pipes that are out of frame
         pipes.removeAll(toRemove);
+        counters.removeAll(toRemoveCounter);
     }
 
     private void addPipe(final int time, final int height) {
         int newTime = time;
-        final int FAR_OFFSCREEN = 10000;
+        final int FAR_OFFSCREEN = 9000;
 
         // the position of the upper pipe
         int y1 = ThreadLocalRandom.current().nextInt(-400, height - 900);
@@ -232,6 +247,14 @@ public class GameSurface extends JPanel implements KeyListener {
         // and the lower one
         int y2 = y1 + 800;
         pipes.add(new Pipe(newTime, FAR_OFFSCREEN, y2));
+    }
+    private void addCounter(final int time) {
+        int newTime = time;
+        final int spawnPoint = 9300;
+        counters.add(new Counter(newTime, spawnPoint));
+
+
+
     }
 
     @Override

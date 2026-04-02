@@ -1,16 +1,10 @@
 package se.yrgo.game;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -20,7 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 /**
  * A simple panel with a space invaders "game" in it. This is just to
@@ -46,6 +40,7 @@ public class GameSurface extends JPanel implements KeyListener {
     private Rectangle birb;
     private transient BufferedImage birbImageSprite;
     private int birbImageSpriteCount;
+    private BufferedImage background;
 
     private int score;
 
@@ -74,6 +69,16 @@ public class GameSurface extends JPanel implements KeyListener {
             logger.log(Level.WARNING, "Unable to load image resource: /birb.png", ex);
         }
 
+        try (InputStream spriteStream = GameSurface.class.getResourceAsStream("/forest.jpg")) {
+            if (spriteStream == null) {
+                logger.log(Level.WARNING, "Unable to load image resource: /background.jpg");
+            } else {
+                this.background = ImageIO.read(spriteStream);
+            }
+        } catch (IOException ex) {
+            logger.log(Level.WARNING, "Unable to load image resource: /background.jpg", ex);
+        }
+
         this.gameOver = false;
         this.pipes = new ArrayList<>();
         this.counters = new ArrayList<>();
@@ -88,6 +93,7 @@ public class GameSurface extends JPanel implements KeyListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
 
         Graphics2D g2d = (Graphics2D) g;
         drawSurface(g2d);
@@ -113,8 +119,10 @@ public class GameSurface extends JPanel implements KeyListener {
         }
 
         // fill the background
-        g.setColor(Color.CYAN);
-        g.fillRect(0, 0, d.width, d.height);
+        //g.setColor(Color.CYAN);
+        //g.fillRect(0, 0, d.width, d.height);
+        g.drawImage(background, 0,0, null);
+
 
         // draw the pipe
         for (Pipe pipe : pipes) {
@@ -176,7 +184,7 @@ public class GameSurface extends JPanel implements KeyListener {
         if(birb.y < 0)
             birb.y = 0;
         else if (birb.y > 750) {
-            birb.y = 750;
+            gameOver = true;
         }
 
         final Dimension d = getSize();

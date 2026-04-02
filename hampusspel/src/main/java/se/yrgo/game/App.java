@@ -1,6 +1,7 @@
 package se.yrgo.game;
 
-import javax.swing.JFrame;
+import javax.swing.*;
+
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 
 /**
@@ -10,11 +11,11 @@ import static javax.swing.JFrame.EXIT_ON_CLOSE;
  */
 public class App {
     public static void main(String[] args) {
-        JFrame main = new JFrame("Jumpy Birb");
-
         GameSurface gs = new GameSurface(400);
-
-        main.setSize(1536, 864);
+        BackgroundPanel bp = new BackgroundPanel();
+        JPanel panel = new JPanel();
+        JFrame main = new JFrame("Jumpy Birb");
+        main.setSize(1472, 832);
         main.add(gs);
         main.addKeyListener(gs);
         main.setDefaultCloseOperation(EXIT_ON_CLOSE);

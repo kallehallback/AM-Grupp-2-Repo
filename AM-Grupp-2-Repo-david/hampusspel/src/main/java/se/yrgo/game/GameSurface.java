@@ -1,0 +1,287 @@
+package se.yrgo.game;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+
+/**
+ * A simple panel with a space invaders "game" in it. This is just to
+ * demonstrate the bare minimum of stuff than can be done drawing on a panel.
+ * This is by no means good code, but rather a short demonstration on
+ * some things one can do to make a very simple Swing based game.
+ * 
+ * If you really want to make a good game there are several toolkits for
+ * game making out there which are much more suitable for this.
+ * 
+ */
+public class GameSurface extends JPanel implements KeyListener {
+    private static final long serialVersionUID = 6260582674762246325L;
+    private static Logger logger = Logger.getLogger(GameSurface.class.getName());
+
+    private static final double PIPE_PIXELS_PER_MS = 0.25;
+
+    // make some transient to get past boring serialization demands...
+    private transient FrameUpdater updater;
+    private boolean gameOver;
+    private boolean gameStarted;
+    private transient List<Pipe> pipes;
+    private transient List<Counter> counters;
+    private Rectangle birb;
+    private transient BufferedImage birbImageSprite;
+    private int birbImageSpriteCount;
+    private BufferedImage background;
+
+    private int score;
+
+    private double velocity = 0;
+    private double gravity = 0.2;
+
+    private int frameWidth = 17;
+    private int frameHeight = 12;
+    private int scale = 5;
+    private int drawWidth = frameWidth * scale; // 85
+    private int drawHeight = frameHeight * scale; // 60
+    private int offset = frameWidth * birbImageSpriteCount;
+
+    private long lastPipeSpawnTime = 0;
+    private static final int PIPE_SPAWN_INTERVAL = 2000;
+
+    public GameSurface(final int width) {
+        try (InputStream spriteStream = GameSurface.class.getResourceAsStream("/birb.png")) {
+            if (spriteStream == null) {
+                logger.log(Level.WARNING, "Unable to load image resource: /birb.png");
+            } else {
+                this.birbImageSprite = ImageIO.read(spriteStream);
+            }
+            this.birbImageSpriteCount = 0;
+        } catch (IOException ex) {
+            logger.log(Level.WARNING, "Unable to load image resource: /birb.png", ex);
+        }
+
+        try (InputStream spriteStream = GameSurface.class.getResourceAsStream("/forest.jpg")) {
+            if (spriteStream == null) {
+                logger.log(Level.WARNING, "Unable to load image resource: /background.jpg");
+            } else {
+                this.background = ImageIO.read(spriteStream);
+            }
+        } catch (IOException ex) {
+            logger.log(Level.WARNING, "Unable to load image resource: /background.jpg", ex);
+        }
+
+        this.gameOver = false;
+        this.gameStarted = false;
+        this.pipes = new ArrayList<>();
+        this.counters = new ArrayList<>();
+        this.birb = new Rectangle(500, 432, 85, 60);
+        this.score = 0;
+
+        this.updater = new FrameUpdater(this, 60);
+        this.updater.setDaemon(true); // it should not keep the app running
+        this.updater.start();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        Graphics2D g2d = (Graphics2D) g;
+        drawSurface(g2d);
+    }
+
+    /**
+     * Call this method when the graphics needs to be repainted on the graphics
+     * surface.
+     * 
+     * @param g the graphics to paint on
+     */
+    private void drawSurface(Graphics2D g) {
+        final Dimension d = this.getSize();
+
+        if (gameOver) {
+            g.setColor(Color.red);
+            g.fillRect(0, 0, d.width, d.height);
+            g.setColor(Color.black);
+            g.setFont(new Font("Arial", Font.BOLD, 100));
+            g.drawString("Game over!", 475, 432);
+            drawScore(g, d, true);
+            return;
+        }
+
+        // fill the background
+        g.drawImage(background, 0, 0, null);
+
+        // draw the pipe
+        for (Pipe pipe : pipes) {
+            g.setColor(Color.GREEN);
+            g.fillRect(pipe.bounds.x, pipe.bounds.y, pipe.bounds.width, pipe.bounds.height);
+
+            // draw the outline
+            g.setColor(Color.BLACK);
+            g.setStroke(new BasicStroke(5)); // thickness
+            g.drawRect(pipe.bounds.x, pipe.bounds.y, pipe.bounds.width, pipe.bounds.height);
+        }
+
+        // draw the bird
+        g.drawImage(
+                birbImageSprite,
+                birb.x,
+                birb.y,
+                birb.x + drawWidth,
+                birb.y + drawHeight,
+                offset,
+                0,
+                offset + frameWidth,
+                frameHeight,
+                null);
+
+        // draw the score
+        drawScore(g, d, false);
+    }
+
+    private void drawScore(Graphics2D g, Dimension d, boolean gameOverBackground) {
+        final String scoreText = String.valueOf(score / 20);
+        final Font scoreFont = new Font("Monospaced", Font.BOLD, 100);
+
+        g.setFont(scoreFont);
+        FontMetrics metrics = g.getFontMetrics(scoreFont);
+        int x = d.width - metrics.stringWidth(scoreText) - 733; // x position
+        int y = 10 + metrics.getAscent(); // y position
+
+        // text outline
+        g.setColor(Color.BLACK);
+        g.drawString(scoreText, x - 2, y);
+        g.drawString(scoreText, x + 2, y);
+        g.drawString(scoreText, x, y - 2);
+        g.drawString(scoreText, x, y + 2);
+
+        // text
+        g.setColor(Color.WHITE);
+        g.drawString(scoreText, x, y);
+    }
+
+    public void update(int time) {
+        if (gameOver) {
+            updater.interrupt();
+            return;
+        }
+
+        if (!gameStarted) {
+            return;
+        }
+
+        velocity += gravity;
+        birb.y += velocity;
+
+        if (birb.y < 0)
+            birb.y = 0;
+        else if (birb.y > 750) {
+            gameOver = true;
+        }
+
+        final Dimension d = getSize();
+        if (d.height <= 0 || d.width <= 0) {
+            return;
+        }
+
+        // spawns a pipe at the start of the game
+        if (lastPipeSpawnTime == 0) {
+            lastPipeSpawnTime = time - PIPE_SPAWN_INTERVAL;
+        }
+
+        // continously spawn pipes every other second
+        if (time - lastPipeSpawnTime >= PIPE_SPAWN_INTERVAL) {
+            addPipe(time, d.height);
+            addCounter(time);
+            lastPipeSpawnTime = time;
+        }
+
+        final List<Pipe> toRemove = new ArrayList<>();
+        final List<Counter> toRemoveCounter = new ArrayList<>();
+
+        for (Pipe pipe : pipes) {
+            int timeElapsed = time - pipe.timeCreated;
+            pipe.bounds.x = (int) (d.width - (timeElapsed * PIPE_PIXELS_PER_MS));
+            if (pipe.bounds.x + pipe.bounds.width < 0) {
+                toRemove.add(pipe);
+            }
+
+            if (pipe.bounds.intersects(birb)) {
+                gameOver = true;
+            }
+        }
+
+        for (Counter counter : counters) {
+            int timeElapsed = time - counter.timeCreated;
+            counter.bounds.x = (int) (d.width - (timeElapsed * PIPE_PIXELS_PER_MS) + 150);
+            if (counter.bounds.x + counter.bounds.width < 0) {
+                toRemoveCounter.add(counter);
+            }
+
+            if (counter.bounds.intersects(birb)) {
+                score = score + 1;
+            }
+        }
+
+        // remove all pipes that are out of frame
+        pipes.removeAll(toRemove);
+        counters.removeAll(toRemoveCounter);
+    }
+
+    private void addPipe(final int time, final int height) {
+        int newTime = time;
+        final int FAR_OFFSCREEN = 9000;
+
+        // the position of the upper pipe
+        int y1 = ThreadLocalRandom.current().nextInt(-400, height - 900);
+        pipes.add(new Pipe(newTime, FAR_OFFSCREEN, y1));
+
+        // and the lower one
+        int y2 = y1 + 800;
+        pipes.add(new Pipe(newTime, FAR_OFFSCREEN, y2));
+    }
+
+    private void addCounter(final int time) {
+        int newTime = time;
+        final int spawnPoint = 9300;
+        counters.add(new Counter(newTime, spawnPoint));
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (gameOver) {
+            return;
+        }
+
+        final int kc = e.getKeyCode();
+
+        if (!gameStarted && kc == KeyEvent.VK_SPACE) {
+            gameStarted = true;
+            return;
+        }
+
+        if (kc == KeyEvent.VK_SPACE) {
+            velocity = -6;
+        }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        // do nothing
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        // do nothing
+    }
+}

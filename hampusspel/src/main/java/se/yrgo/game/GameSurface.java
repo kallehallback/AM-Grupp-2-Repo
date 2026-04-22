@@ -3,6 +3,7 @@ package se.yrgo.game;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -14,6 +15,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 
 /**
@@ -21,17 +25,15 @@ import javax.swing.*;
  * demonstrate the bare minimum of stuff than can be done drawing on a panel.
  * This is by no means good code, but rather a short demonstration on
  * some things one can do to make a very simple Swing based game.
- * 
+ *
  * If you really want to make a good game there are several toolkits for
  * game making out there which are much more suitable for this.
- * 
+ *
  */
 public class GameSurface extends JPanel implements KeyListener, MouseListener {
-    private JTextField input;
-    private JButton button;
     private Highscore archive = new Highscore();
     private SoundPlayer sound = new SoundPlayer();
-    private ArrayList<Player> highscore = archive.loadScore("highscore.txt");
+    private ArrayList<Player> highscore = new ArrayList<>();
     private static final long serialVersionUID = 6260582674762246325L;
     private static Logger logger = Logger.getLogger(GameSurface.class.getName());
 
@@ -54,6 +56,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
     private BufferedImage gameOverBackground;
     private boolean inputname=false;
     private String playerName = "";
+    private File highScoreFile = new File("src\\main\\resources\\highscore.txt");
 
     private int score;
 
@@ -67,7 +70,13 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
     private static final int OBSTACLE_SPAWN_INTERVAL = 2500;
 
     public GameSurface(final int width) {
+        try{
+            highScoreFile.createNewFile();
 
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Unable to read or access high score");
+        }
+        highscore = archive.loadScore("highscore.txt");
         try (InputStream spriteStream = GameSurface.class.getResourceAsStream("/witch.png")) {
             if (spriteStream == null) {
                 logger.log(Level.WARNING, "Unable to load image resource: /witch.png");
@@ -143,7 +152,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
     /**
      * Call this method when the graphics needs to be repainted on the graphics
      * surface.
-     * 
+     *
      * @param g the graphics to paint on
      */
     private void drawSurface(Graphics2D g) {
@@ -168,12 +177,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
             g.setFont(new Font("Arial", Font.BOLD, 40));
             g.setColor(Color.WHITE);
             int newLine = g.getFont().getSize() + 5;
-            int highScoreValue = 0;
             int y = 100;
-            Player bestPlayer = highscore.get(0);
-            if (!highscore.isEmpty()) {
-                highScoreValue = highscore.get(0).getScore(); // assuming sorted list
-            }
             g.drawString("High Score:", 25, y);
             for(int i=0;i<highscore.size();i++){
                 if(i<10) {
@@ -417,10 +421,14 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
 
 
         final int kc = e.getKeyCode();
+
+        if (kc == KeyEvent.VK_ESCAPE) {
+             System.exit(0);
+}
         char key = e.getKeyChar();
         //if(!inputname && kc != KeyEvent.VK_SPACE) {
-            //playerName = playerName + e.getKeyChar();
-            //return;
+        //playerName = playerName + e.getKeyChar();
+        //return;
         //}
 
         if (gameOver && kc == KeyEvent.VK_SPACE) {
@@ -502,4 +510,5 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
     public void mouseExited(MouseEvent e) {
         // do nothing
     }
+
 }

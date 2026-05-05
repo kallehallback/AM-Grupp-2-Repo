@@ -353,9 +353,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
             }
             manageObstacles(time, d);
             manageCounters(time, d);
-
         }
-
     }
 
     private void manageObstacles(int time, final Dimension d) {

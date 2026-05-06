@@ -48,6 +48,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
     private int playerImageSpriteCount;
     private BufferedImage background;
     private BufferedImage nameBackground;
+    private BufferedImage menuBackground;
     private BufferedImage gameOverBackground;
     private boolean inputname = false;
     private String playerName = "";
@@ -69,6 +70,15 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
     private int distance;
 
     public GameSurface(final int width) {
+        try (InputStream spriteStream = GameSurface.class.getResourceAsStream("/menu_background.png")) {
+            if (spriteStream != null) {
+                this.menuBackground = ImageIO.read(spriteStream);
+            } else {
+                logger.log(Level.WARNING, "Unable to load image resource: /menu_background.png");
+            }
+        } catch (IOException ex) {
+            logger.log(Level.WARNING, "Unable to load image resource: /menu_background.png", ex);
+        }
         try {
             highScoreFileEasy.createNewFile();
             highScoreFileMedium.createNewFile();
@@ -161,24 +171,43 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
         final Dimension d = this.getSize();
 
         if (showMenu) {
-            g.setColor(Color.BLACK);
-            g.fillRect(0, 0, d.width, d.height);
-            g.setColor(Color.WHITE);
-            g.fillRect(400, 200, 500, 150);
-            g.setColor(Color.BLACK);
-            g.setFont(new Font("Arial", Font.BOLD, 80));
-            g.drawString("jumpy Witch", 420, 300);
-            g.setColor(Color.WHITE);
+            if (menuBackground != null) {
+                g.drawImage(menuBackground, 0, 0, d.width, d.height, null);
+            }
+
+            String title = "jumpy Witch";
+
+            g.setFont(new Font("SansSerif", Font.BOLD, 90));
+
+            // glow layer
+            for (int i = 10; i > 0; i--) {
+                g.setColor(new Color(0, 0, 0, 20));
+                g.drawString(title, 420 - i, 300 - i);
+            }
+
+            g.setColor(Color.darkGray);
+            g.drawString(title, 420, 300);
+
+            g.setColor(Color.white);
+            g.setFont(new Font("Cinzel", Font.BOLD, 30));
+            g.drawString("Press SPACE to Start", 520, 550);
+
             g.setFont(new Font("Arial", Font.BOLD, 40));
-            g.drawString("Press SPACE to Start", 450, 550);
-            g.setFont(new Font("Arial", Font.BOLD, 40));
-            g.setColor(Color.WHITE);
+            g.setColor(Color.darkGray);
             int newLine = g.getFont().getSize() + 5;
+            int highScoreValue = 0;
             int y = 100;
+
+            String bestPlayer = null;
+
+            if (!highscoreMedium.isEmpty()) {
+                bestPlayer = highscoreMedium.keySet().iterator().next();
+                highScoreValue = highscoreMedium.get(bestPlayer);
+            }
             g.drawString("High Score:", 25, y);
             int i = 0;
-            for(String k : highscoreMedium.keySet()){
-                if(i<10){
+            for (String k : highscoreMedium.keySet()) {
+                if (i < 10) {
                     g.drawString((i + 1) + " - " + k + " : " + highscoreMedium.get(k), 25, y += newLine);
                     i += 1;
                 }

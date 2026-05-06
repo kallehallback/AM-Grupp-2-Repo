@@ -1,70 +1,168 @@
-# Space invaders demo project
+# Jumpy Witch – Demo Game Project
 
-This is a very basic space invaders demo for use in one of my classes to show some basic Swing/AWT code.
+This is a simple Java Swing/AWT game.  
+It is a Flappy Bird–style jumping game where a witch avoids obstacles, collects points, and competes for highscores.
 
-This is not a good example of how to make a game, it is just there to give some hints as to what one could do to create a very basic game.
+---
 
 ## Building
 
-Build using maven with `./mvnw package`.
+Build the project using Maven:
+
+    ./mvnw package
+
+---
 
 ## Running
 
-Run the app with `./mvnw exec:java`.
+Run the application with:
+
+    ./mvnw exec:java
+
+---
+
+## Gameplay Overview
+
+- You control a witch that jumps to avoid obstacles (trees)
+- Press SPACE or left mouse click to jump
+- Avoid collisions and stay within the screen
+- Score increases as you pass obstacles
+- Choose between Easy, Medium, and Hard difficulty levels
+- Highscores are saved locally per difficulty
+
+---
 
 ## Architecture Overview
 
-This project demonstrates a basic game architecture using Java Swing/AWT. Here's what you need to
-know to understand and modify the code safely:
+The project demonstrates a basic real-time game loop using Swing.
 
-### Class Structure
+### Main Classes
 
-The game consists of four main classes:
+1. App.java – Entry Point
+   - Creates the main JFrame
+   - Adds the GameSurface
+   - Registers input listeners
+   - Starts the application
 
-1. **App.java** - The entry point
-   - Creates the main JFrame window
-   - Initializes the GameSurface (game panel)
-   - Sets up the window properties and event listeners
-   - This is where the application starts
+2. GameSurface.java – Core Game Logic and Rendering
+   Responsibilities:
+   - Rendering (paintComponent, drawSurface)
+   - Game state management (player, obstacles, score, menus)
+   - Input handling (keyboard and mouse)
 
-2. **GameSurface.java** - The core game logic and rendering
-   - Extends JPanel and implements KeyListener
-   - Manages all game state (aliens, spaceship, game over flag)
-   - Handles two main responsibilities:
-     - **Rendering** (`paintComponent()` and `drawSurface()`): Draws everything on screen
-     - **Game logic** (`update()`): Updates positions, detects collisions, spawns aliens
-   - Processes keyboard input for ship movement
-   - Creates and starts the FrameUpdater thread
+   Game flow:
+   - Main menu
+   - Name input
+   - Difficulty selection
+   - Gameplay
+   - Game over screen
 
-3. **FrameUpdater.java** - The game loop timing mechanism
-   - A dedicated Thread that drives the game loop
-   - Calls `update()` and `repaint()` on GameSurface at a target frame rate (60 FPS)
-   - Uses precise timing with nanoseconds to maintain consistent speed
-   - Runs independently of the rendering to keep the game smooth
+   Key features:
+   - Time-based movement
+   - Gravity and jumping mechanics
+   - Collision detection
+   - Sprite rendering
+   - Highscore tracking
+   - Sound effects
 
-4. **Alien.java** - A simple data class
-   - Represents a single alien enemy
-   - Contains position/size (bounds) and creation time
-   - Note: This is intentionally simple and could be improved with better encapsulation
+3. FrameUpdater.java – Game Loop
+   - Runs on a separate thread
+   - Calls update() and repaint()
+   - Targets 60 FPS
+   - Uses nanosecond timing
 
-### How the Game Loop Works
+4. Obstacle.java
+   - Represents obstacles (trees)
+   - Stores position and creation time
 
-1. **Initialization**: App creates GameSurface, which starts FrameUpdater
-2. **Loop cycle** (60 times per second):
-   - FrameUpdater calls `GameSurface.update(time)` with elapsed time in milliseconds
-   - `update()` moves aliens based on elapsed time, checks collisions, spawns new aliens
-   - FrameUpdater triggers `repaint()` which eventually calls `paintComponent()`
-   - `paintComponent()` redraws everything at their current positions
-3. **Input**: Key releases are captured and move the spaceship immediately
+5. Counter.java
+   - Invisible scoring trigger between obstacles
+   - Ensures score increments correctly
 
-### Key Design Concepts
+6. Highscore.java
+   - Loads and saves highscores from text files
+   - Format: name///score
+   - Sorts scores in descending order
 
-- **Time-based movement**: Aliens move based on elapsed time (not frame count), making movement smooth and consistent regardless of frame rate
-- **Separation of concerns**: Update logic is separate from rendering logic
+7. Player.java
+   - Simple data class for player name and score
 
-### Important Notes for Safe Modifications
+8. SoundPlayer.java
+   - Plays sound effects (jump, score, game over)
 
-- Always update game positions in `update()`, not in `paintComponent()` - painting should only read state, not modify it
-- Remember that movement should be time-based: multiply speed by elapsed time
-- When adding/removing from lists during iteration, collect items to remove in a separate list (see how aliens are removed)
-- The game loop runs on a background thread, so be aware of potential threading issues when accessing shared data
+9. BackgroundPanel.java (optional / unused)
+   - Can render a background image
+   - Not currently used in main flow
+
+10. SortByScore.java (legacy / unused)
+   - Old comparator, replaced by stream sorting
+
+---
+
+## How the Game Loop Works
+
+1. Initialization:
+   - App creates GameSurface
+   - GameSurface starts FrameUpdater
+
+2. Loop cycle (~60 FPS):
+   - update(time)
+     - Applies gravity
+     - Moves player
+     - Spawns obstacles
+     - Checks collisions
+     - Updates score
+   - repaint()
+     - Calls paintComponent()
+     - Draws everything
+
+3. Input:
+   - SPACE / Mouse: jump
+   - ENTER: navigate menus
+   - ESC: exit game
+
+---
+
+## Key Design Concepts
+
+- Time-based movement (not frame-based)
+- Separation of update logic and rendering
+- Simple state machine (menu → game → game over)
+- Basic collision detection using Rectangle
+
+---
+
+## Important Notes for Safe Modifications
+
+- Always update game state in update(), NOT in paintComponent()
+- Painting should only read state, never modify it
+- Movement should be time-based (speed * time)
+- Be careful when modifying lists during iteration
+- The game loop runs on a separate thread, so watch for concurrency issues
+
+---
+
+## Resources
+
+Assets are loaded from:
+
+    src/main/resources/
+
+Includes:
+- Images (witch, trees, backgrounds)
+- Sound files (.wav)
+- Highscore files:
+  - highscore_easy.txt
+  - highscore_medium.txt
+  - highscore_hard.txt
+
+---
+
+## Possible Improvements
+
+- Better object-oriented design (encapsulation)
+- Cleaner separation of logic and rendering
+- Use delta-time instead of absolute time
+- Improve collision handling
+- Add animations or effects
+- Refactor into MVC or a more structured architecture

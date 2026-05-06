@@ -98,7 +98,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
             }
             this.playerImageSpriteCount = 0;
         } catch (IOException ex) {
-            logger.log(Level.WARNING, "Unable to load image resource: /birb.png", ex);
+            logger.log(Level.WARNING, "Unable to load image resource: /witch.png", ex);
         }
         try (InputStream spriteStream = GameSurface.class.getResourceAsStream("/tree2.png")) {
             if (spriteStream == null) {
@@ -112,12 +112,12 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
 
         try (InputStream spriteStream = GameSurface.class.getResourceAsStream("/forest.jpg")) {
             if (spriteStream == null) {
-                logger.log(Level.WARNING, "Unable to load image resource: /background.jpg");
+                logger.log(Level.WARNING, "Unable to load image resource: /forest.jpg");
             } else {
                 this.background = ImageIO.read(spriteStream);
             }
         } catch (IOException ex) {
-            logger.log(Level.WARNING, "Unable to load image resource: /background.jpg", ex);
+            logger.log(Level.WARNING, "Unable to load image resource: /forest.jpg", ex);
         }
 
         try (InputStream spriteStream = GameSurface.class.getResourceAsStream("/witch_name2.png")) {

@@ -40,6 +40,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
     private boolean showMenu = true;
     private boolean pause = true;
     private boolean difficultySelector = false;
+    private boolean viewHighScore = false;
     private transient List<Obstacle> obstacles;
     private transient List<Counter> counters;
     private Rectangle player;
@@ -190,7 +191,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
 
             g.setColor(Color.white);
             g.setFont(new Font("Cinzel", Font.BOLD, 30));
-            g.drawString("Press SPACE to Start", 520, 550);
+            g.drawString("Press SPACE to start game", 520, 550);
 
             g.setFont(new Font("Arial", Font.BOLD, 40));
             g.setColor(Color.darkGray);
@@ -198,20 +199,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
             int highScoreValue = 0;
             int y = 100;
 
-            String bestPlayer = null;
 
-            if (!highscoreMedium.isEmpty()) {
-                bestPlayer = highscoreMedium.keySet().iterator().next();
-                highScoreValue = highscoreMedium.get(bestPlayer);
-            }
-            g.drawString("High Score:", 25, y);
-            int i = 0;
-            for (String k : highscoreMedium.keySet()) {
-                if (i < 10) {
-                    g.drawString((i + 1) + " - " + k + " : " + highscoreMedium.get(k), 25, y += newLine);
-                    i += 1;
-                }
-            }
             return;
         }
 

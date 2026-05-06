@@ -24,11 +24,11 @@ public class FrameUpdater extends Thread {
         while (!isInterrupted()) {
             long currentTime = System.nanoTime();
             long timeAtNextUpdate = currentTime + timeBetweenUpdates;
-            
+
             // notify the update method how many milliseconds have elapsed
             // since we started this loop
             try {
-                surface.update((int)((currentTime - startTime) / 1_000_000));
+                surface.update((int) ((currentTime - startTime) / 1_000_000));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -53,13 +53,12 @@ public class FrameUpdater extends Thread {
     private void sleepRemaining(long sleepToNanos) {
         long totalNanosLeft = sleepToNanos - System.nanoTime();
         long millisLeft = totalNanosLeft / 1_000_000;
-        int nanosLeft = (int)(totalNanosLeft - millisLeft * 1_000_000);
+        int nanosLeft = (int) (totalNanosLeft - millisLeft * 1_000_000);
 
         if (millisLeft > 0 || nanosLeft > 0) {
             try {
                 Thread.sleep(millisLeft, nanosLeft);
-            }
-            catch (InterruptedException ex) {
+            } catch (InterruptedException ex) {
                 interrupt();
             }
         }

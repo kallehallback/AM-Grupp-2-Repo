@@ -17,7 +17,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class GameSurface extends JPanel implements KeyListener, MouseListener {
-    enum difficulty{
+    enum difficulty {
         EASY,
         MEDIUM,
         HARD
@@ -199,7 +199,6 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
             int highScoreValue = 0;
             int y = 100;
 
-
             return;
         }
 
@@ -214,7 +213,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
             return;
         }
 
-        if(!showMenu && difficultySelector && !gameStarted){
+        if (!showMenu && difficultySelector && !gameStarted) {
             g.drawImage(gameOverBackground, 0, 0, null);
             g.drawImage(gameOverBackground, 1472, 0, null);
             g.setColor(Color.white);
@@ -231,43 +230,44 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
         if (gameOver) {
             Thread.sleep(50);
             if (once) {
-                if(myDifficulty == difficulty.EASY){
-                    if(!highscoreEasy.containsKey(playerName)){
-                        highscoreEasy.put(playerName, score/20);
+                if (myDifficulty == difficulty.EASY) {
+                    if (!highscoreEasy.containsKey(playerName)) {
+                        highscoreEasy.put(playerName, score / 20);
                         highscoreEasy = archive.sortScores(highscoreEasy);
                         archive.saveScore(highscoreEasy, "highscore_easy.txt");
                         once = false;
-                    } else if (highscoreEasy.containsKey(playerName) && highscoreEasy.get(playerName) < score/20) {
+                    } else if (highscoreEasy.containsKey(playerName) && highscoreEasy.get(playerName) < score / 20) {
                         highscoreEasy.remove(playerName);
-                        highscoreEasy.put(playerName, score/20);
+                        highscoreEasy.put(playerName, score / 20);
                         highscoreEasy = archive.sortScores(highscoreEasy);
                         archive.saveScore(highscoreEasy, "highscore_easy.txt");
                         once = false;
                     }
                 }
-                if(myDifficulty == difficulty.MEDIUM){
-                    if(!highscoreMedium.containsKey(playerName)){
-                        highscoreMedium.put(playerName, score/20);
+                if (myDifficulty == difficulty.MEDIUM) {
+                    if (!highscoreMedium.containsKey(playerName)) {
+                        highscoreMedium.put(playerName, score / 20);
                         highscoreMedium = archive.sortScores(highscoreMedium);
                         archive.saveScore(highscoreMedium, "highscore_medium.txt");
                         once = false;
-                    } else if (highscoreMedium.containsKey(playerName) && highscoreMedium.get(playerName) < score/20) {
+                    } else if (highscoreMedium.containsKey(playerName)
+                            && highscoreMedium.get(playerName) < score / 20) {
                         highscoreMedium.remove(playerName);
-                        highscoreMedium.put(playerName, score/20);
+                        highscoreMedium.put(playerName, score / 20);
                         highscoreMedium = archive.sortScores(highscoreMedium);
                         archive.saveScore(highscoreMedium, "highscore_medium.txt");
                         once = false;
                     }
                 }
-                if(myDifficulty == difficulty.HARD){
-                    if(!highscoreHard.containsKey(playerName)){
-                        highscoreHard.put(playerName, score/20);
+                if (myDifficulty == difficulty.HARD) {
+                    if (!highscoreHard.containsKey(playerName)) {
+                        highscoreHard.put(playerName, score / 20);
                         highscoreHard = archive.sortScores(highscoreHard);
                         archive.saveScore(highscoreHard, "highscore_hard.txt");
                         once = false;
-                    } else if (highscoreHard.containsKey(playerName) && highscoreHard.get(playerName) < score/20) {
+                    } else if (highscoreHard.containsKey(playerName) && highscoreHard.get(playerName) < score / 20) {
                         highscoreHard.remove(playerName);
-                        highscoreHard.put(playerName, score/20);
+                        highscoreHard.put(playerName, score / 20);
                         highscoreHard = archive.sortScores(highscoreHard);
                         archive.saveScore(highscoreHard, "highscore_hard.txt");
                         once = false;
@@ -281,15 +281,15 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
             g.setColor(Color.white);
             g.setFont(new Font("Old English Text MT", Font.PLAIN, 100));
             g.drawString("Game over!", 475, 150);
-            if(myDifficulty == difficulty.EASY){
+            if (myDifficulty == difficulty.EASY) {
                 g.setFont(new Font("Old English Text MT", Font.PLAIN, 40));
                 int y = 220;
                 int newLine = g.getFont().getSize() + 10;
                 g.drawString("High Score - easy difficulty:", 420, y);
                 g.setFont(new Font("Old English Text MT", Font.PLAIN, 30));
                 int i = 0;
-                for(String k : highscoreEasy.keySet()){
-                    if(i<10){
+                for (String k : highscoreEasy.keySet()) {
+                    if (i < 10) {
                         g.drawString((i + 1) + " - " + k + " : " + highscoreEasy.get(k), 580, y += newLine);
                         i += 1;
                     }
@@ -301,8 +301,8 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
                 g.drawString("High Score - medium difficulty:", 420, y);
                 g.setFont(new Font("Old English Text MT", Font.PLAIN, 30));
                 int i = 0;
-                for(String k : highscoreMedium.keySet()){
-                    if(i<10){
+                for (String k : highscoreMedium.keySet()) {
+                    if (i < 10) {
                         g.drawString((i + 1) + " - " + k + " : " + highscoreMedium.get(k), 580, y += newLine);
                         i += 1;
                     }
@@ -314,19 +314,20 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
                 g.drawString("High Score - hard difficulty:", 420, y);
                 g.setFont(new Font("Old English Text MT", Font.PLAIN, 30));
                 int i = 0;
-                for(String k : highscoreHard.keySet()){
-                    if(i<10){
+                for (String k : highscoreHard.keySet()) {
+                    if (i < 10) {
                         g.drawString((i + 1) + " - " + k + " : " + highscoreHard.get(k), 580, y += newLine);
                         i += 1;
                     }
                 }
             }
             g.setFont(new Font("Book Antiqua", Font.PLAIN, 30));
-            g.drawString("Press SPACE to try again, ENTER to return to the main menu or D to change difficulty.", 150, 750);
+            g.drawString("Press SPACE to try again, ENTER to return to the main menu or D to change difficulty.", 150,
+                    750);
             return;
         }
 
-        if(myDifficulty == difficulty.EASY){
+        if (myDifficulty == difficulty.EASY) {
             gravity = 0.2;
             OBSTACLE_SPAWN_INTERVAL = 3000;
             distance = 900;
@@ -334,7 +335,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
             gravity = 0.3;
             OBSTACLE_SPAWN_INTERVAL = 2500;
             distance = 850;
-        } else if(myDifficulty == difficulty.HARD){
+        } else if (myDifficulty == difficulty.HARD) {
             gravity = 0.4;
             OBSTACLE_SPAWN_INTERVAL = 2000;
             distance = 800;
@@ -537,7 +538,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
             restartGame();
             return; // ← TILLAGD
         }
-        if(gameOver && kc == KeyEvent.VK_ENTER) {
+        if (gameOver && kc == KeyEvent.VK_ENTER) {
             this.gameOver = false;
             this.gameStarted = false;
             this.once = true;
@@ -545,7 +546,7 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
             this.pause = true;
             restartGame();
         }
-        if(gameOver && kc == KeyEvent.VK_D){
+        if (gameOver && kc == KeyEvent.VK_D) {
             this.gameOver = false;
             this.gameStarted = false;
             this.once = true;
@@ -565,21 +566,21 @@ public class GameSurface extends JPanel implements KeyListener, MouseListener {
             difficultySelector = true;
         }
 
-        if(!showMenu && difficultySelector && kc == KeyEvent.VK_1){
+        if (!showMenu && difficultySelector && kc == KeyEvent.VK_1) {
             myDifficulty = difficulty.EASY;
             difficultySelector = false;
             gameStarted = true;
             pause = true;
         }
 
-        if(!showMenu && difficultySelector && kc == KeyEvent.VK_2){
+        if (!showMenu && difficultySelector && kc == KeyEvent.VK_2) {
             myDifficulty = difficulty.MEDIUM;
             difficultySelector = false;
             gameStarted = true;
             pause = true;
         }
 
-        if(!showMenu && difficultySelector && kc == KeyEvent.VK_3){
+        if (!showMenu && difficultySelector && kc == KeyEvent.VK_3) {
             myDifficulty = difficulty.HARD;
             difficultySelector = false;
             gameStarted = true;
